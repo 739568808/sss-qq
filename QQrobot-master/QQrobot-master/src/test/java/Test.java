@@ -96,11 +96,6 @@ public class Test {
 
     public static void main(String[] args) {
 		SmartQQClient smartQQClient = new SmartQQClient(null);
-		
-		
-		
-		
-		
 		List<Group> groupList = smartQQClient.getGroupList();
 //		for (Group group : groupList) {
 //			System.out.println(group.getName()+"=="+group.getId()+"=="+group.getCode());
