@@ -95,6 +95,7 @@ public class Test {
     }
 
     public static void main(String[] args) {
+    	//先登录
 		SmartQQClient smartQQClient = new SmartQQClient(null);
 		List<Group> groupList = smartQQClient.getGroupList();
 //		for (Group group : groupList) {

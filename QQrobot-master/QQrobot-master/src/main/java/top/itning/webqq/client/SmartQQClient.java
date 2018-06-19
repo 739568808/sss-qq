@@ -44,6 +44,7 @@ public class SmartQQClient implements Closeable {
      * 成功码
      */
     private static final int SUCCESS_CODE = 200;
+    public static  String  FILEPATH;
     /**
      * 日志
      */
@@ -149,22 +150,23 @@ public class SmartQQClient implements Closeable {
         LOGGER.debug("开始获取二维码");
 
         //本地存储二维码图片
-        String filePath;
         try {
-            filePath = new File("qrcode.png").getCanonicalPath();
+        	String filepath = new File("qrcode.png").getCanonicalPath();
+        
+	        Response response = session.get(ApiURL.GET_QR_CODE.getUrl())
+	                .addHeader("User-Agent", ApiURL.USER_AGENT)
+	                .file(filepath);
+	        for (Cookie cookie : response.getCookies()) {
+	            if ("qrsig".equals(cookie.getName())) {
+	                qrsig = cookie.getValue();
+	                break;
+	            }
+	        }
+	        FILEPATH = filepath;
+	        LOGGER.info("二维码已保存在 " + FILEPATH + " 文件中，请打开手机QQ并扫描二维码");
         } catch (IOException e) {
             throw new IllegalStateException("二维码保存失败");
         }
-        Response response = session.get(ApiURL.GET_QR_CODE.getUrl())
-                .addHeader("User-Agent", ApiURL.USER_AGENT)
-                .file(filePath);
-        for (Cookie cookie : response.getCookies()) {
-            if ("qrsig".equals(cookie.getName())) {
-                qrsig = cookie.getValue();
-                break;
-            }
-        }
-        LOGGER.info("二维码已保存在 " + filePath + " 文件中，请打开手机QQ并扫描二维码");
     }
 
     /**
@@ -401,7 +403,7 @@ public class SmartQQClient implements Closeable {
         Map<Long, Friend> friendMap = parseFriendMap(result);
         //获得分组
         JSONArray categories = result.getJSONArray("categories");
-        Map<Integer, Category> categoryMap = new HashMap<>(16);
+        Map<Integer, Category> categoryMap = new HashMap<Integer, Category>(16);
         categoryMap.put(0, Category.defaultCategory());
         for (int i = 0; categories != null && i < categories.size(); i++) {
             Category category = categories.getObject(i, Category.class);
@@ -413,7 +415,7 @@ public class SmartQQClient implements Closeable {
             Friend friend = friendMap.get(item.getLongValue("uin"));
             categoryMap.get(item.getIntValue("categories")).addFriend(friend);
         }
-        return new ArrayList<>(categoryMap.values());
+        return new ArrayList<Category>(categoryMap.values());
     }
 
     /**
@@ -429,7 +431,7 @@ public class SmartQQClient implements Closeable {
         r.put("hash", hash());
 
         Response<String> response = post(ApiURL.GET_FRIEND_LIST, r);
-        return new ArrayList<>(parseFriendMap(getJsonObjectResult(response)).values());
+        return new ArrayList<Friend>(parseFriendMap(getJsonObjectResult(response)).values());
     }
 
     /**
@@ -439,7 +441,7 @@ public class SmartQQClient implements Closeable {
      * @return 好友列表
      */
     private static Map<Long, Friend> parseFriendMap(JSONObject result) {
-        Map<Long, Friend> friendMap = new HashMap<>(16);
+        Map<Long, Friend> friendMap = new HashMap<Long, Friend>(16);
         JSONArray info = result.getJSONArray("info");
         for (int i = 0; info != null && i < info.size(); i++) {
             JSONObject item = info.getJSONObject(i);
@@ -605,7 +607,7 @@ public class SmartQQClient implements Closeable {
         JSONObject result = getJsonObjectResult(response);
         GroupInfo groupInfo = result.getObject("ginfo", GroupInfo.class);
         //获得群成员信息
-        Map<Long, GroupUser> groupUserMap = new HashMap<>(16);
+        Map<Long, GroupUser> groupUserMap = new HashMap<Long, GroupUser>(16);
         JSONArray minfo = result.getJSONArray("minfo");
         for (int i = 0; minfo != null && i < minfo.size(); i++) {
             GroupUser groupUser = minfo.getObject(i, GroupUser.class);
@@ -647,7 +649,7 @@ public class SmartQQClient implements Closeable {
         JSONObject result = getJsonObjectResult(response);
         DiscussInfo discussInfo = result.getObject("info", DiscussInfo.class);
         //获得讨论组成员信息
-        Map<Long, DiscussUser> discussUserMap = new HashMap<>(16);
+        Map<Long, DiscussUser> discussUserMap = new HashMap<Long, DiscussUser>(16);
         JSONArray minfo = result.getJSONArray("mem_info");
         for (int i = 0; minfo != null && i < minfo.size(); i++) {
             DiscussUser discussUser = minfo.getObject(i, DiscussUser.class);
