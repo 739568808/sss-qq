@@ -11,6 +11,8 @@ import net.dongliu.requests.Session;
 import net.dongliu.requests.exception.RequestException;
 import net.dongliu.requests.struct.Cookie;
 import org.apache.log4j.Logger;
+
+import top.itning.qq.SSSLogin;
 import top.itning.webqq.callback.MessageCallback;
 import top.itning.webqq.constant.ApiURL;
 import top.itning.webqq.model.*;
@@ -140,7 +142,9 @@ public class SmartQQClient implements Closeable {
         getFriendStatus(); //修复Api返回码[103]的问题
         //登录成功欢迎语
         UserInfo userInfo = getAccountInfo();
+        SSSLogin.qqUserName.setText("欢迎,"+userInfo.getNick());
         LOGGER.info(userInfo.getNick() + "，欢迎！");
+        SSSLogin.logMsg.setText("扫码登录成功\n"+SSSLogin.logMsg.getText());
     }
 
     /**
@@ -199,6 +203,7 @@ public class SmartQQClient implements Closeable {
             if (result.contains("成功")) {
                 for (String content : result.split(SPLIT_SYMBOL)) {
                     if (content.startsWith("http")) {
+                    	SSSLogin.logMsg.setText("扫码登录中...\n"+SSSLogin.logMsg.getText());
                         LOGGER.info("正在登录，请稍后");
                         return content;
                     }

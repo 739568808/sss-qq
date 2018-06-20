@@ -2,6 +2,7 @@ package top.itning.qq;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -10,6 +11,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -21,6 +23,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
@@ -39,8 +42,8 @@ public class SSSLogin {
 	private final String NAME="唰唰唰-qq群发";
 	public JFrame frame = new JFrame("登录");
 	private Container c = frame.getContentPane();
-	private JTextField username = new JTextField("");
-	private JPasswordField password = new JPasswordField("");
+	private JTextField username = new JTextField("test");
+	private JPasswordField password = new JPasswordField("lhy");
 	private static User user= null;
 	//微博用户名密码
 	private JTextField username_wb = new JTextField("");
@@ -53,19 +56,30 @@ public class SSSLogin {
 	private JButton cancel = new JButton("取消");
 	private JLabel errorMeg = new JLabel("");
 	private JLabel errorMeg_wb = new JLabel("");
+	private JLabel errorMeg_qq = new JLabel("");
 	
 	private JFrame mainframe = new JFrame("");
 	private JPanel fieldPanel = new JPanel();
 	public static  JTextArea logMsg = new JTextArea();
 	
+	private JPanel showQrcodepanel = new JPanel();
+	private JComboBox allGrouphairTimeComboBox=new JComboBox();
+	private JPanel cheakboxListpanel = new JPanel();
+	JButton jb;
+	public static JLabel qqUserName = new JLabel("");
+	private SmartQQClient smartQQClient = null;
+	private JTextArea contentTextArea=new JTextArea("");
+	private JComboBox grouphairTimeComboBox=new JComboBox();
 	
+	
+	public static Thread groupHair;
 	
 	public void mainFrame(String userName) throws InterruptedException{
 		try {
 			mainframe.setTitle(NAME+"会员："+userName);
 			mainframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-			mainframe.setSize(805, 700);
+			mainframe.setSize(805, 600);
 			mainframe.setResizable(false);
 			//居中
 			Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -80,7 +94,7 @@ public class SSSLogin {
 			fieldPanel.setLayout(null);
 			
 			//绑定微博
-			JPanel showQrcodepanel = new JPanel();
+			showQrcodepanel = new JPanel();
 			showQrcodepanel.setLayout(null);
 			showQrcodepanel.setBounds(10, 10, 430, 200);
 			showQrcodepanel.setBorder(BorderFactory.createTitledBorder("扫码登录QQ"));
@@ -98,8 +112,49 @@ public class SSSLogin {
 			
 			fieldPanel.add(showQrcodepanel);
 			
+			qqUserName = new JLabel("");
+			qqUserName.setBounds(10, 20, 100, 24);
+			fieldPanel.add(qqUserName);
+			
+			errorMeg_qq.setForeground(Color.red);
+			errorMeg_qq.setBounds(130, 20, 100, 24);
+			fieldPanel.add(errorMeg_qq);
+			
+			JLabel grouphairTimeLabel = new JLabel("群发间隔/秒");
+			grouphairTimeLabel.setBounds(20, 58, 100, 20);
+			fieldPanel.add(grouphairTimeLabel);
+			
+			String[] grouphairTimeArr = {"10", "15", "30", "60"};  
+			grouphairTimeComboBox = new JComboBox(grouphairTimeArr); 
+			grouphairTimeComboBox.setBounds(95, 58, 50, 20);
+			fieldPanel.add(grouphairTimeComboBox);
+			
+			JLabel allGrouphairTimeLabel = new JLabel("下次群发开始/分");
+			allGrouphairTimeLabel.setBounds(190, 58, 100, 20);
+			fieldPanel.add(allGrouphairTimeLabel);
+			
+			String[] allGrouphairTimeMinArr = {"5","10", "15", "30", "60"};  
+			allGrouphairTimeComboBox = new JComboBox(allGrouphairTimeMinArr); 
+			allGrouphairTimeComboBox.setBounds(290, 58, 50, 20);
+			fieldPanel.add(allGrouphairTimeComboBox);
 			
 			
+			JLabel groupContentLabel = new JLabel("群发内容:");
+			groupContentLabel.setBounds(20, 88, 80, 20);
+			fieldPanel.add(groupContentLabel);
+			
+			contentTextArea.setBounds(80, 88, 240, 30);
+			contentTextArea.setText("互粉互粉，诚信互粉\r\nhttp://www.weibo.com/u/"+user.getWbUserId());
+			fieldPanel.add(contentTextArea);
+			
+			
+			
+			jb = new JButton("开始执行");
+	        jb.addActionListener(getSelected);
+	        jb.setBounds(20, 125, 100, 50);
+	        
+	        fieldPanel.add(jb);
+	        
 			
 			logMsg.setBounds(450, 0, 340, 600);
 			JScrollPane text2=new JScrollPane(logMsg);
@@ -116,26 +171,91 @@ public class SSSLogin {
 		}
 	}
 	
+	ActionListener getSelected = new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+	        if(e.getSource()==jb) {
+	            List<String> strs=new ArrayList<String>();
+	            Component[] jcbs = cheakboxListpanel.getComponents();//获取jp1里的全部组件(我们只在里面存放了jcheckbox)
+	            for (Component component : jcbs) {
+	                JCheckBox jcb = (JCheckBox) component;//需要强制转换成jcheckbox
+	                if(jcb.isSelected()) {
+	                    strs.add(jcb.getText());
+	                }
+	            }
+	            if(strs.size()==0) {
+	            	errorMeg_qq.setText("请选择QQ群");
+	            	return;
+	            }
+	            String content = contentTextArea.getText();
+				if (StringUtils.isEmpty(content)) {
+					errorMeg_wb.setText("【错误操作】群发内容不允许为空！！！");
+					return;
+				}
+	            int grouphairTime = Integer.valueOf(String.valueOf(grouphairTimeComboBox.getSelectedItem()))*1000;//秒
+				int allGrouphairTime = Integer.valueOf(String.valueOf(allGrouphairTimeComboBox.getSelectedItem()))*60*1000;//分
+				
+				sendMsg(content, grouphairTime, allGrouphairTime, strs);
+	        }
+	    }
+	};
+	
+	private void sendMsg(String content,int grouphairTime,int allGrouphairTime,List<String> strs) {
+		groupHair = new Thread() {
+			public void run() {
+				logMsg.setText("开始群发\n"+logMsg.getText());
+				for (;;) {
+					List<Group> groupList = smartQQClient.getGroupList();
+					try {
+						Long groupId = null;
+						for (String name : strs) {
+							
+							for (Group group : groupList) {
+								if (group.getName().equals(name)) {
+									groupId = group.getId();
+								}
+							}
+							smartQQClient.sendMessageToGroup(groupId, content);
+							logMsg.setText("【群发】"+name+"发送成功\n"+logMsg.getText());
+							Thread.sleep(grouphairTime);
+						}
+						logMsg.setText("【群发】完成下次开始时间"+allGrouphairTime/1000+"秒后开始\n"+logMsg.getText());
+						Thread.sleep(allGrouphairTime);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+
+			}
+		};
+		groupHair.start();
+
+	}
+	
 	private void openMainFrame(String userName) throws Exception {
 		new Thread(){
 			public void run(){
-				SmartQQClient smartQQClient = new SmartQQClient(null);
+				smartQQClient = new SmartQQClient(null);
+				if (smartQQClient != null) {
+					showQrcodepanel.hide();
+				}
 				List<Group> groupList = smartQQClient.getGroupList();
 				
-				JPanel grouphairJpanel = new JPanel();
-				grouphairJpanel.setLayout(null);
-				grouphairJpanel.setBounds(10, 95, 430, 200);
-				grouphairJpanel.setBorder(BorderFactory.createTitledBorder("群发设置"));
-				
-				JList<JCheckBox> jList = new JList<JCheckBox>();
+				int y=20;
+				int x= 0;
 				for (Group group : groupList) {
-//					System.out.println(group.getId()+"--"+group.getName());
-					JCheckBox jCheckBox = new JCheckBox(group.getName()+"#"+group.getId()+"");
-					jList.add(jCheckBox);
-//					jCheckBox.setva
+					JCheckBox jCheckBox = new JCheckBox(group.getName()/*+" >>"+group.getId()*/);
+					int xxx =10;
+					if (x%2==0 && x!=0) {
+						xxx = xxx*20;
+						y+=20;
+					}
+					jCheckBox.setBounds(xxx, y, 160, 20);
+					cheakboxListpanel.add(jCheckBox);
+					x++;
 				}
-				grouphairJpanel.add(jList);
-				fieldPanel.add(grouphairJpanel);
+				cheakboxListpanel.setBounds(10, 170, 400, 600);
+		        fieldPanel.add(cheakboxListpanel);
 	           }
 		}.start();
 

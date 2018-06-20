@@ -32,6 +32,7 @@ public class DBSelect {
                 String wbPassword = rs.getString(6);  
                 String wbContent = rs.getString(7);  
                 Date endDate = rs.getDate(8);  
+                String wbUserId = rs.getString(9);  
                 user.setId(id);
                 user.setUserName(userName1);
 //                user.setPassword(password1);
@@ -40,6 +41,7 @@ public class DBSelect {
                 user.setWbPassword(wbPassword);
                 user.setWbContent(wbContent);
                 user.setEndDate(endDate);
+                user.setWbUserId(wbUserId);
                 System.out.println(id + "\t" + userName1 + "\t"  + "\t" + permission + "\t" + wbUserName + "\t" + wbPassword );  
             }//显示数据  
         	rs.close();  
