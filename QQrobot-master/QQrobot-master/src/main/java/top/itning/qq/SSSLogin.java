@@ -30,8 +30,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import top.itning.qq.db.DBSelect;
 import top.itning.qq.db.User;
@@ -42,8 +42,8 @@ public class SSSLogin {
 	private final String NAME="唰唰唰-qq群发";
 	public JFrame frame = new JFrame("登录");
 	private Container c = frame.getContentPane();
-	private JTextField username = new JTextField("test");
-	private JPasswordField password = new JPasswordField("lhy");
+	private JTextField username = new JTextField("");
+	private JPasswordField password = new JPasswordField("");
 	private static User user= null;
 	//微博用户名密码
 	private JTextField username_wb = new JTextField("");
@@ -63,13 +63,13 @@ public class SSSLogin {
 	public static  JTextArea logMsg = new JTextArea();
 	
 	private JPanel showQrcodepanel = new JPanel();
-	private JComboBox allGrouphairTimeComboBox=new JComboBox();
+	public static JComboBox allGrouphairTimeComboBox=new JComboBox();
 	private JPanel cheakboxListpanel = new JPanel();
-	JButton jb;
+	public static JButton jb;
 	public static JLabel qqUserName = new JLabel("");
 	private SmartQQClient smartQQClient = null;
 	private JTextArea contentTextArea=new JTextArea("");
-	private JComboBox grouphairTimeComboBox=new JComboBox();
+	public static JComboBox grouphairTimeComboBox=new JComboBox();
 	
 	
 	public static Thread groupHair;
@@ -103,8 +103,7 @@ public class SSSLogin {
 			register2.setBounds(10, 20, 170, 170);
 			register2.setForeground(Color.blue);
 			while (SmartQQClient.FILEPATH==null) {
-				Thread.sleep(100);
-				
+				Thread.sleep(10);
 			}
 			Icon qqicon = new ImageIcon(SmartQQClient.FILEPATH);
 			register2.setIcon(qqicon);
@@ -127,6 +126,7 @@ public class SSSLogin {
 			String[] grouphairTimeArr = {"10", "15", "30", "60"};  
 			grouphairTimeComboBox = new JComboBox(grouphairTimeArr); 
 			grouphairTimeComboBox.setBounds(95, 58, 50, 20);
+//			grouphairTimeComboBox.hide();
 			fieldPanel.add(grouphairTimeComboBox);
 			
 			JLabel allGrouphairTimeLabel = new JLabel("下次群发开始/分");
@@ -136,6 +136,7 @@ public class SSSLogin {
 			String[] allGrouphairTimeMinArr = {"5","10", "15", "30", "60"};  
 			allGrouphairTimeComboBox = new JComboBox(allGrouphairTimeMinArr); 
 			allGrouphairTimeComboBox.setBounds(290, 58, 50, 20);
+//			allGrouphairTimeComboBox.hide();
 			fieldPanel.add(allGrouphairTimeComboBox);
 			
 			
@@ -152,7 +153,7 @@ public class SSSLogin {
 			jb = new JButton("开始执行");
 	        jb.addActionListener(getSelected);
 	        jb.setBounds(20, 125, 100, 50);
-	        
+//	        jb.hide();
 	        fieldPanel.add(jb);
 	        
 			
@@ -165,6 +166,7 @@ public class SSSLogin {
 			mainframe.setLocation(x, y);
 			mainframe.setVisible(true);
 			frame.dispose();
+			
 		} catch (HeadlessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -246,7 +248,7 @@ public class SSSLogin {
 				for (Group group : groupList) {
 					JCheckBox jCheckBox = new JCheckBox(group.getName()/*+" >>"+group.getId()*/);
 					int xxx =10;
-					if (x%2==0 && x!=0) {
+					if (x%2==0) {
 						xxx = xxx*20;
 						y+=20;
 					}
@@ -256,7 +258,10 @@ public class SSSLogin {
 				}
 				cheakboxListpanel.setBounds(10, 170, 400, 600);
 		        fieldPanel.add(cheakboxListpanel);
+//		        fieldPanel.setVisible(true);
+		        mainframe.setVisible(true);
 	           }
+			
 		}.start();
 
 		mainFrame(userName);

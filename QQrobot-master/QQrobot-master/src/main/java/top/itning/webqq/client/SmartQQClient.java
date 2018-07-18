@@ -144,6 +144,9 @@ public class SmartQQClient implements Closeable {
         UserInfo userInfo = getAccountInfo();
         SSSLogin.qqUserName.setText("欢迎,"+userInfo.getNick());
         LOGGER.info(userInfo.getNick() + "，欢迎！");
+        SSSLogin.grouphairTimeComboBox.show();
+        SSSLogin.allGrouphairTimeComboBox.show();
+        SSSLogin.jb.show();
         SSSLogin.logMsg.setText("扫码登录成功\n"+SSSLogin.logMsg.getText());
     }
 
